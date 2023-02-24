@@ -22,32 +22,35 @@ app.include_router(validacion)
 # scheduler = BackgroundScheduler()
 
 
-def descargar_crl():
-  
-    crl_url = "http://crl1.uanataca.com/public/pki/crl/CCGT.crl"
-
-    res = requests.get(crl_url)
+def descargar_crl(url, crl_name):
+    res = requests.get(url)
     print(res)
-    f = open("CCGCRL.crl", "wb")
+    f = open(f"{crl_name}.crl", "wb")
     f.write(res.content)
     f.close()
-    log = open("log.txt", "a+",encoding="utf-8")
+    log = open(f"{crl_name}.txt", "a+", encoding="utf-8")
     today = datetime.now()
     log.write(f"Sé descargó crl -> {today} ")
     log.write(str("\n"))
     log.close()
 
 
+def trigger_descargar_crl():
+    crl_url_prod = "http://crl1.uanataca.com/public/pki/crl/CCGT.crl"
+    crl_url_sandbox = "http://crl1.sandbox.uanataca.com/public/pki/crl/CCGT.crl"
+    descargar_crl(crl_url_prod, "CCGCRL")
+    descargar_crl(crl_url_sandbox, "CCGCRL_Sandbox")
+
 
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
 
+
 @app.on_event("startup")
 async def startup_event():
-    descargar_crl()
+    trigger_descargar_crl()
     scheduler = BackgroundScheduler()
-    scheduler.add_job(descargar_crl, 'interval',seconds=30, max_instances=1)
+    scheduler.add_job(trigger_descargar_crl, 'interval',
+                      seconds=30, max_instances=1)
     scheduler.start()
-
-

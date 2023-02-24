@@ -7,9 +7,13 @@ from cryptography import x509
 
 class Certificado:
 
-    async def descargar_certificado(self, username: str, password: str):
+    async def descargar_certificado(self, username: str, password: str,env:str):
         headers = {"content-type": "application/json"}
-        url_uanataca_signcloud = "https://cryptoapi.uanataca.com/api/get_objects"
+        if env == "prod":
+            url_uanataca_signcloud = "https://cryptoapi.uanataca.com/api/get_objects"
+        elif env == "sandbox":
+            url_uanataca_signcloud = "https://cryptoapi.sandbox.uanataca.com/api/get_objects"
+            
         credenciales = {
             "username": username,
             "password": password,
@@ -21,8 +25,8 @@ class Certificado:
             async with session.post(url=url_uanataca_signcloud, data=credenciales_json) as response:
                 return [response.status, await response.text()]
 
-    async def obtener_cerficado_crl(self, username: str, password: str):
-        status, res = await self.descargar_certificado(username, password)
+    async def obtener_cerficado_crl(self, username: str, password: str,env:str):
+        status, res = await self.descargar_certificado(username, password,env)
         if status == 200:
 
             certificado_base64 = json.loads(res)["result"][1]["data"]
@@ -59,8 +63,8 @@ class Certificado:
                 "estado": "La última autenticación falló, intenteló en un momento."
             }
 
-    async def obtener_cerficado_ocsp(self, username: str, password: str):
-        status, res = await self.descargar_certificado(username, password)
+    async def obtener_cerficado_ocsp(self, username: str, password: str,env:str):
+        status, res = await self.descargar_certificado(username, password,env)
         
         
         if status == 200:

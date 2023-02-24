@@ -8,9 +8,9 @@ class ValidacionCrl():
 
         self.certificado = Certificado()
 
-    async def validar_certificado(self, username: str, password: str):
+    async def validar_certificado(self, username: str, password: str,env:str):
 
-        certificado = await self.certificado.obtener_cerficado_crl(username, password)
+        certificado = await self.certificado.obtener_cerficado_crl(username, password,env)
 
         if type(certificado) is dict:
 
@@ -22,7 +22,7 @@ class ValidacionCrl():
             if(validacion_vencimiento is not None):
                 return validacion_vencimiento
             
-            validacion_revocacion = self.validacion_revocacion(certificado)
+            validacion_revocacion = self.validacion_revocacion(certificado,env)
             
             if (validacion_revocacion is not None):
                 return validacion_revocacion 
@@ -44,10 +44,13 @@ class ValidacionCrl():
             }
         return None
 
-    def validacion_revocacion(self, certificado: Certificate) -> dict:
+    def validacion_revocacion(self, certificado: Certificate,env:str) -> dict:
         no_serial_certificado = certificado.serial_number
-       
-        crl_data = open("CCGCRL.crl", "rb").read()
+        if env == "prod":
+            crl_data = open("CCGCRL.crl", "rb").read()
+        elif env == "sandbox":
+            crl_data = open("CCGCRL_Sandbox.crl", "rb").read()
+            
 
         crl = load_der_x509_crl(crl_data)
         for r in crl:

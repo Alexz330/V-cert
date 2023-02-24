@@ -13,7 +13,8 @@ validacion_services_ocsp = Validacion_ocsp()
 async def validacion_ocsp(credenciales: Credenciales):
     validacion = await validacion_services_ocsp.validar_certificado(
         username=credenciales.username,
-        password=credenciales.password
+        password=credenciales.password,
+        env=credenciales.env
     )
 
     return JSONResponse(status_code=200, content=validacion)
@@ -22,7 +23,8 @@ async def validacion_ocsp(credenciales: Credenciales):
 async def validacion_crl(credenciales: Credenciales):
     validacion = await validacion_services.validar_certificado(
         username=credenciales.username,
-        password=credenciales.password
+        password=credenciales.password,
+        env=credenciales.env
     )
 
     return JSONResponse(status_code=200, content=validacion)

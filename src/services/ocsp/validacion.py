@@ -11,9 +11,9 @@ class Validacion_ocsp:
     def __init__(self) -> None:
 
         self.certificado = Certificado()
-    async def validar_certificado(self, username: str, password: str):
-        certificado,certificado_base64 = await self.certificado.obtener_cerficado_ocsp(username, password)
-        print(certificado)
+    async def validar_certificado(self, username: str, password: str,env):
+        certificado,certificado_base64 = await self.certificado.obtener_cerficado_ocsp(username, password,env)
+
         if type(certificado) is dict:
 
             return certificado
@@ -24,7 +24,7 @@ class Validacion_ocsp:
             if(validacion_vencimiento is not None):
                 return validacion_vencimiento
             
-            validacion_revocacion = self.validacion_revocacion(certificado_base64)
+            validacion_revocacion = self.validacion_revocacion(certificado_base64,env)
             
             if (validacion_revocacion is not None):
                 return validacion_revocacion 
@@ -36,7 +36,7 @@ class Validacion_ocsp:
     
     def validacion_vencimiento(self, certificado: Certificate) -> dict:
         fecha_actual = datetime.now()
-        print(certificado)
+
         fecha_vencimiento = certificado.not_valid_after
         if (fecha_actual > fecha_vencimiento):
             return {
@@ -49,12 +49,16 @@ class Validacion_ocsp:
             }   
         return None
     
-    def validacion_revocacion(self, certificado_base64):
+    def validacion_revocacion(self, certificado_base64,env:str):
         issuer = 'i.pem'
         cert = normalize_pem(certificado_base64)
         name_certificate = "test"
         write_ceritficate(name_certificate,cert)
-        ocsp_url = 'http://ocsp1.uanataca.com/public/pki/ocsp'
+        if env == "prod":
+            ocsp_url = 'http://ocsp1.uanataca.com/public/pki/ocsp'
+        elif env == "sandbox":
+            ocsp_url = ' http://ocsp1.sandbox.uanataca.com/public/pki/ocsp/'
+            
         args = ['openssl', 'ocsp', '-issuer', issuer, '-cert', f"src/certificates/{name_certificate}.pem", '-text', '-url', ocsp_url]
 
         # Ejecutar el comando de OpenSSL
@@ -68,7 +72,7 @@ class Validacion_ocsp:
         if len(revocation_time_line) > 0:
             revocation_time = revocation_time_line[0].split(': ')[1].strip()
             date_revoked = parse(revocation_time)
-            print(revocation_time)
+         
             return {
                     "codigo": 2,
                     "estado": "Certificado Revocado",
