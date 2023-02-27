@@ -1,8 +1,8 @@
 import aiohttp
 import json
 import asyncio
-
-url = "http://localhost:8000/ocsp"
+host = "192.168.1.240"
+url = f"http://{host}:8000/crl"
 
 
 async def send_request(session, credentials):
@@ -97,6 +97,7 @@ async def main():
             "env": "prod"
         },
     ]
+    print(len(credentials))
 
     async with aiohttp.ClientSession() as session:
         tasks = [send_request(session, c) for c in credentials]

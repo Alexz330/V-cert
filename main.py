@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-import uvicorn
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 from datetime import datetime
@@ -49,8 +48,14 @@ def read_root():
 
 @app.on_event("startup")
 async def startup_event():
-    trigger_descargar_crl()
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(trigger_descargar_crl, 'interval',
-                      seconds=30, max_instances=1)
-    scheduler.start()
+    try:
+        trigger_descargar_crl()
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(trigger_descargar_crl, 'interval',
+                        seconds=30, max_instances=1)
+        scheduler.start()
+    except:
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(trigger_descargar_crl, 'interval',
+                        seconds=30, max_instances=1)
+        scheduler.start()

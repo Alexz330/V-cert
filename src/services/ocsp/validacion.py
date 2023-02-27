@@ -12,27 +12,32 @@ class Validacion_ocsp:
 
         self.certificado = Certificado()
     async def validar_certificado(self, username: str, password: str,env):
-        certificado,certificado_base64 = await self.certificado.obtener_cerficado_ocsp(username, password,env)
+        try:
+            certificado,certificado_base64 = await self.certificado.obtener_cerficado_ocsp(username, password,env)
 
-        if type(certificado) is dict:
+            if type(certificado) is dict:
 
-            return certificado
-        else:
-            validacion_vencimiento = self.validacion_vencimiento(certificado)
+                return certificado
+            else:
+                validacion_vencimiento = self.validacion_vencimiento(certificado)
 
-            
-            if(validacion_vencimiento is not None):
-                return validacion_vencimiento
-            
-            validacion_revocacion = self.validacion_revocacion(certificado_base64,env)
-            
-            if (validacion_revocacion is not None):
-                return validacion_revocacion 
-            return {
-                "codigo": 3,
-                "estado": "Certificado Vigente"
+                
+                if(validacion_vencimiento is not None):
+                    return validacion_vencimiento
+                
+                validacion_revocacion = self.validacion_revocacion(certificado_base64,env)
+                
+                if (validacion_revocacion is not None):
+                    return validacion_revocacion 
+                return {
+                    "codigo": 3,
+                    "estado": "Certificado Vigente"
+                }
+        except:
+            return{
+                "codigo":8,
+                "estado":"Error al obtener certificado"
             }
-
     
     def validacion_vencimiento(self, certificado: Certificate) -> dict:
         fecha_actual = datetime.now()

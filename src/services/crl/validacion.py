@@ -9,26 +9,31 @@ class ValidacionCrl():
         self.certificado = Certificado()
 
     async def validar_certificado(self, username: str, password: str,env:str):
+        try:
+            certificado = await self.certificado.obtener_cerficado_crl(username, password,env)
 
-        certificado = await self.certificado.obtener_cerficado_crl(username, password,env)
+            if type(certificado) is dict:
 
-        if type(certificado) is dict:
+                return certificado
+            else:
+                validacion_vencimiento = self.validacion_vencimiento(certificado)
 
-            return certificado
-        else:
-            validacion_vencimiento = self.validacion_vencimiento(certificado)
-
-            
-            if(validacion_vencimiento is not None):
-                return validacion_vencimiento
-            
-            validacion_revocacion = self.validacion_revocacion(certificado,env)
-            
-            if (validacion_revocacion is not None):
-                return validacion_revocacion 
-            return {
-                "codigo": 3,
-                "estado": "Certificado Vigente"
+                
+                if(validacion_vencimiento is not None):
+                    return validacion_vencimiento
+                
+                validacion_revocacion = self.validacion_revocacion(certificado,env)
+                
+                if (validacion_revocacion is not None):
+                    return validacion_revocacion 
+                return {
+                    "codigo": 3,
+                    "estado": "Certificado Vigente"
+                }
+        except:
+            return{
+                "codigo":8,
+                "estado":"Error al obtener certificado"
             }
 
     def validacion_vencimiento(self, certificado: Certificate) -> dict:
