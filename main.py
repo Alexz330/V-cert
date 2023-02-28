@@ -18,9 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(validacion)
-# scheduler = BackgroundScheduler()
 
 
+#funcion para decargar crl -> params, url = url donde se aolja la crl, crl_name = nombre de la crl para difernciar entornos
 def descargar_crl(url, crl_name):
     res = requests.get(url)
     print(res)
@@ -34,28 +34,31 @@ def descargar_crl(url, crl_name):
     log.close()
 
 
+#funcion que envuelve  a las fucinoies para descargar crl en "sandobox" y "prod"
 def trigger_descargar_crl():
     crl_url_prod = "http://crl1.uanataca.com/public/pki/crl/CCGT.crl"
     crl_url_sandbox = "http://crl1.sandbox.uanataca.com/public/pki/crl/CCGT.crl"
     descargar_crl(crl_url_prod, "CCGCRL")
     descargar_crl(crl_url_sandbox, "CCGCRL_Sandbox")
 
-
+#entpoin inicial para validad si el api reponde
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
 
-
+#funcion que se ejecuta cuando inicia el api
 @app.on_event("startup")
 async def startup_event():
+    #24 hrs convertidas a segundos 
+    time = 86400
     try:
         trigger_descargar_crl()
         scheduler = BackgroundScheduler()
         scheduler.add_job(trigger_descargar_crl, 'interval',
-                        seconds=30, max_instances=1)
+                        seconds=time, max_instances=1)
         scheduler.start()
     except:
         scheduler = BackgroundScheduler()
         scheduler.add_job(trigger_descargar_crl, 'interval',
-                        seconds=30, max_instances=1)
+                        seconds=time, max_instances=1)
         scheduler.start()

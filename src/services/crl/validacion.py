@@ -33,7 +33,7 @@ class ValidacionCrl():
         except:
             return{
                 "codigo":8,
-                "estado":"Error al obtener certificado"
+                "estado":"Error al obtener certificado, Verifique la conexión a internet"
             }
 
     def validacion_vencimiento(self, certificado: Certificate) -> dict:
@@ -63,7 +63,7 @@ class ValidacionCrl():
                 return {
                     "codigo": 2,
                     "estado": "Certificado Revocado",
-                    "fecha de revocacion": r.revocation_date.strftime("%d/%m/%Y"),
+                    "fecha_de_revocacion": r.revocation_date.strftime("%d/%m/%Y"),
                     
                 }
         return None
